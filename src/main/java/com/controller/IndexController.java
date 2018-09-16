@@ -1,9 +1,9 @@
 package com.controller;
 
 import com.config.URLConstant;
+import com.dingTalkUtil.ContactHelper;
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
-import com.dingtalk.api.request.OapiUserGetRequest;
 import com.dingtalk.api.request.OapiUserGetuserinfoRequest;
 import com.dingtalk.api.response.OapiUserGetResponse;
 import com.dingtalk.api.response.OapiUserGetuserinfoResponse;
@@ -59,8 +59,9 @@ public class IndexController {
         //3.查询得到当前用户的userId
         // 获得到userId之后应用应该处理应用自身的登录会话管理（session）,避免后续的业务交互（前端到应用服务端）每次都要重新获取用户身份，提升用户体验
         String userId = response.getUserid();
-
-        String userName = getUserName(accessToken, userId);
+        ContactHelper contactHelper = new ContactHelper();
+        OapiUserGetResponse oapiUserGetResponse = contactHelper.getUserInfo(accessToken, userId);
+        String userName = oapiUserGetResponse.getName();
         System.out.println(userName);
         //返回结果
         Map<String, Object> resultMap = new HashMap<>();
@@ -68,27 +69,6 @@ public class IndexController {
         resultMap.put("userName", userName);
         ServiceResult serviceResult = ServiceResult.success(resultMap);
         return serviceResult;
-    }
-
-    /**
-     * 获取用户姓名
-     *
-     * @param accessToken
-     * @param userId
-     * @return
-     */
-    private String getUserName(String accessToken, String userId) {
-        try {
-            DingTalkClient client = new DefaultDingTalkClient(URLConstant.URL_USER_GET);
-            OapiUserGetRequest request = new OapiUserGetRequest();
-            request.setUserid(userId);
-            request.setHttpMethod("GET");
-            OapiUserGetResponse response = client.execute(request, accessToken);
-            return response.getName();
-        } catch (ApiException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
 }
